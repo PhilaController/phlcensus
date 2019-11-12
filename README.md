@@ -6,7 +6,6 @@
 ![t](https://img.shields.io/badge/status-stable-green.svg)
 [![](https://img.shields.io/github/license/PhiladelphiaController/phlcensus.svg)](https://github.com/PhiladelphiaController/phlcensus/blob/master/LICENSE)
 [![PyPi version](https://img.shields.io/pypi/v/phlcensus.svg)](https://pypi.python.org/pypi/phlcensus/)
-[![Anaconda-Server Badge](https://anaconda.org/controllerphl/phlcensus/badges/version.svg)](https://anaconda.org/controllerphl/phlcensus)
 
 A Python package to download and wrangle Census data for the City of Philadelphia.
 

@@ -1,0 +1,15 @@
+name: phlcensus
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - numpy
+  - pandas
+  - geopandas
+  - pytest
+  - pytest-cov
+  - coveralls
+  - pip:
+      - cenpy
+      - esri2gpd
+      - census_data_aggregator

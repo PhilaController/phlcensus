@@ -4,5 +4,3 @@ geopandas
 cenpy
 esri2gpd
 census_data_aggregator
-
-

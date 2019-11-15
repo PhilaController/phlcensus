@@ -19,6 +19,7 @@ install:
   - conda install --yes python=$TRAVIS_PYTHON_VERSION
   - conda info
   - while read requirement; do conda install --yes $requirement || pip install $requirement; done < requirements.txt
+  - pip install .[dev]
 script:
   - py.test . --cov phlcensus
 after_success:

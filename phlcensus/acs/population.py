@@ -16,13 +16,14 @@ class Population(ACSDataset):
     def process(cls, df):
 
         # Area in sq. mile
-        FT_PER_MILE = 5280.0
-        df["area"] = df.geometry.area / (FT_PER_MILE) ** 2
-        df["area_moe"] = 0
+        if "geometry" in df.columns:
+            FT_PER_MILE = 5280.0
+            df["area"] = df.geometry.area / (FT_PER_MILE) ** 2
+            df["area_moe"] = 0
 
-        # Density in people / sq mile
-        df["density"] = df["total_population"] / df["area"]
-        df["density_moe"] = df["total_population_moe"] / df["area"]
+            # Density in people / sq mile
+            df["density"] = df["total_population"] / df["area"]
+            df["density_moe"] = df["total_population_moe"] / df["area"]
 
         return df
 

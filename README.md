@@ -14,3 +14,7 @@ A Python package to download and wrangle Census data for the City of Philadelphi
 ```
 pip install phlcensus
 ```
+
+## Examples
+
+Coming soon...

@@ -4,7 +4,27 @@ import geopandas as gpd
 from . import EPSG, data_dir
 from .core import Dataset
 
-__all__ = ["PlanningDistricts", "CensusTracts", "PUMAs"]
+__all__ = ["PlanningDistricts", "CensusTracts", "PUMAs", "ZIPCodes"]
+
+
+class ZIPCodes(Dataset):
+    """
+    Polygons representing Philadelphia's ZIP codes.
+
+    Notes
+    -----
+    These are from the 2018 Census ZIP Code Tabulation Areas (ZCTAs).
+
+    Source
+    ------
+    https://phl.maps.arcgis.com/home/item.html?id=ab9d26be1df8486c8d5d706fb32b33d5
+    """
+
+    @classmethod
+    def download(cls, **kwargs):
+
+        url = "https://services.arcgis.com/fLeGjb7u4uXqeF9q/arcgis/rest/services/Philadelphia_ZCTA_2018/FeatureServer/0"
+        return esri2gpd.get(url, fields=["zip_code"]).to_crs(epsg=EPSG)
 
 
 class PlanningDistricts(Dataset):

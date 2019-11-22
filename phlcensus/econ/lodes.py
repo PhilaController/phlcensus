@@ -2,13 +2,17 @@ from ..core import Dataset, EPSG, data_dir
 from ..regions import CensusTracts
 import pandas as pd
 
-__all__ = ["JobsByWorkTract", "JobsByHomeTract"]
+__all__ = ["WorkLODES", "HomeLODES"]
 
 
-class JobsDatasetBase(Dataset):
+class BaseLODES(Dataset):
     """
-    Base class for loading data from the 
-    Longitudinal Employer-Household Dynamics (LEHD).
+    Base class for loading data from the Longitudinal 
+    Employer-Household Dynamics (LEHD) Origin-Destination 
+    Employment Statistics (LODES) dataset.
+
+    This loads data from the Origin-Destination (OD) data 
+    files associated with LODES.
 
     Source
     ------
@@ -131,14 +135,19 @@ class JobsDatasetBase(Dataset):
         return out.sort_values("geo_id").reset_index(drop=True)
 
 
-class JobsByWorkTract(JobsDatasetBase):
+class WorkLODES(BaseLODES):
     """
-    Local jobs by the census tract where the employee
-    works. 
+    A dataset of local jobs by census tract, where the 
+    census tract indicates where the job is located. 
+
+    Notes
+    -----
+    This data is sourced from the Origin-Destination files
+    of the LODES Census dataset.
 
     Source
     ------
-    Longitudinal Employer-Household Dynamics (LEHD) 
+    LODES OD files
     https://lehd.ces.census.gov/
     """
 
@@ -147,14 +156,19 @@ class JobsByWorkTract(JobsDatasetBase):
         return super().download("w_geocode", **kwargs)
 
 
-class JobsByHomeTract(JobsDatasetBase):
+class HomeLODES(BaseLODES):
     """
-    Local jobs by the census tract where the employee
-    lives. 
+    A dataset of local jobs by census tract, where the 
+    census tract indicates where the employee lives.
+
+    Notes
+    -----
+    This data is sourced from the Origin-Destination files
+    of the LODES Census dataset.
 
     Source
     ------
-    Longitudinal Employer-Household Dynamics (LEHD) 
+    LODES OD files
     https://lehd.ces.census.gov/
     """
 

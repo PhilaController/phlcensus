@@ -174,7 +174,8 @@ class ACSDataset(Dataset):
                 df[col] = pd.to_numeric(df[col])
 
             # Set geo_id as an integer
-            df["geo_id"] = df["geo_id"].astype(int)
+            if "geo_id" in df.columns:
+                df["geo_id"] = df["geo_id"].astype(int)
 
             # Return the processed data
             return df.rename(columns=variables)

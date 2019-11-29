@@ -12,9 +12,10 @@ def test_lodes_work(cls):
     cols = [col for col in data_by_tract if not col.startswith("geo")]
 
     # Test other levels
-    for level in ['nta', 'puma']
+    for level in ["nta", "puma"]:
         data = cls.get(level=level, kind="work")
         assert (data_by_tract[cols].sum() == data[cols].sum()).all()
+
 
 @pytest.mark.parametrize("cls", [SummaryLODES, DetailedLODES])
 def test_lodes_home(cls):
@@ -26,6 +27,6 @@ def test_lodes_home(cls):
     cols = [col for col in data_by_tract if not col.startswith("geo")]
 
     # Test other levels
-    for level in ['nta', 'puma']
+    for level in ["nta", "puma"]:
         data = cls.get(level=level, kind="home")
         assert (data_by_tract[cols].sum() == data[cols].sum()).all()

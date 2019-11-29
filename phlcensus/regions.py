@@ -1,10 +1,11 @@
 import esri2gpd
 import cenpy as cen
 import geopandas as gpd
-from . import EPSG, data_dir
+import pandas as pd
+from . import EPSG, data_dir, DEFAULT_YEAR
 from .core import Dataset
 
-__all__ = ["PlanningDistricts", "CensusTracts", "PUMAs", "ZIPCodes"]
+__all__ = ["PlanningDistricts", "CensusTracts", "PUMAs", "ZIPCodes", "NTAs"]
 
 
 class ZIPCodes(Dataset):
@@ -50,7 +51,7 @@ class CensusTracts(Dataset):
     """
 
     @classmethod
-    def get_path(cls, year=2017):
+    def get_path(cls, year=DEFAULT_YEAR):
         return data_dir / cls.__name__ / str(year)
 
     @classmethod
@@ -61,18 +62,18 @@ class CensusTracts(Dataset):
         # Get the year
         YEAR = kwargs.get("year", 2017)
 
-        # the map server layer for Census Tracts
-        LAYER = 8
-
         # trim to PA (42) and Philadelphia County (101)
         WHERE = "STATE=42 AND COUNTY=101"
 
+        if YEAR >= 2010:
+            URL = "https://tigerweb.geo.census.gov/arcgis/rest/services/Census2010/tigerWMS_Census2010/MapServer/10"
+        elif YEAR >= 2000:
+            URL = "https://tigerweb.geo.census.gov/arcgis/rest/services/Census2010/tigerWMS_Census2000/MapServer/6"
+        else:
+            raise ValueError("'year' must be greater than or equal to 2000")
+
         return (
-            esri2gpd.get(
-                f"http://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS{YEAR}/MapServer/{LAYER}",
-                where=WHERE,
-                fields=["GEOID", "NAME"],
-            )
+            esri2gpd.get(URL, where=WHERE, fields=["GEOID", "NAME"])
             .rename(columns={"GEOID": "geo_id", "NAME": "geo_name"})
             .sort_values("geo_id")
             .reset_index(drop=True)
@@ -91,7 +92,7 @@ class PUMAs(Dataset):
     """
 
     @classmethod
-    def get_path(cls, year=2017):
+    def get_path(cls, year=DEFAULT_YEAR):
         return data_dir / cls.__name__ / str(year)
 
     @classmethod
@@ -100,21 +101,40 @@ class PUMAs(Dataset):
         # Get the year
         YEAR = kwargs.get("year", 2017)
 
-        # the map server layer for PUMAS
-        LAYER = 0
-
-        # trim to PA (42) and Philadelphia (contains 032)
-        WHERE = "STATE=42 AND PUMA LIKE '%032%'"
+        if YEAR >= 2010:
+            URL = "https://tigerweb.geo.census.gov/arcgis/rest/services/Census2010/tigerWMS_Census2010/MapServer/0"
+            WHERE = "STATE=42 AND PUMA LIKE '%032%'"  # trim to philadelphia
+        elif YEAR >= 2000:
+            URL = "https://tigerweb.geo.census.gov/arcgis/rest/services/Census2010/tigerWMS_Census2000/MapServer/0"
+            WHERE = "STATE=42 AND PUMA LIKE '%041%'"  # trim to philadelphia
+        else:
+            raise ValueError("'year' must be greater than or equal to 2000")
 
         return (
-            esri2gpd.get(
-                f"http://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS{YEAR}/MapServer/{LAYER}",
-                where=WHERE,
-                fields=["GEOID", "NAME"],
-            )
+            esri2gpd.get(URL, where=WHERE, fields=["GEOID", "NAME"])
             .rename(columns={"GEOID": "geo_id", "NAME": "geo_name"})
             .sort_values("geo_id")
             .reset_index(drop=True)
             .to_crs(epsg=EPSG)
         )
 
+
+class NTAs(Dataset):
+    """
+    Neighborhood Tabulation Areas (NTAs), as determined from a sensible 
+    aggregation of Census tracts.
+    """
+
+    @classmethod
+    def get_path(cls):
+        return data_dir / cls.__name__
+
+    @classmethod
+    def download(cls, **kwargs):
+
+        YEAR = kwargs.get("year", 2017)
+        if YEAR < 2010:
+            raise ValueError(
+                "Neighborhood Tabulation Areas are only defined for 2010 Census tracts"
+            )
+        return pd.read_csv(data_dir / cls.__name__ / "data_raw.csv")

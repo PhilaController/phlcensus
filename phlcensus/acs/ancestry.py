@@ -9,6 +9,7 @@ class Ancestry(ACSDataset):
     People reporting single ancestry.
     """
 
+    AGGREGATION = "count"
     UNIVERSE = "people reporting single ancestry"
     TABLE_NAME = "B04004"
     RAW_FIELDS = collections.OrderedDict(

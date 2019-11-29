@@ -1,5 +1,4 @@
-from .core import ACSDataset
-from .. import agg
+from .core import ACSDataset, approximate_sum
 import collections
 
 __all__ = ["Race"]
@@ -10,6 +9,7 @@ class Race(ACSDataset):
     Hispanic or latino origin by race.
     """
 
+    AGGREGATION = "count"
     UNIVERSE = "total population"
     TABLE_NAME = "B03002"
     RAW_FIELDS = collections.OrderedDict(
@@ -31,16 +31,14 @@ class Race(ACSDataset):
 
         # add a more general other category
         newcol = "all_other_alone"
-        df[[newcol, f"{newcol}_moe"]] = df.apply(
-            agg.approximate_sum,
-            cols=[
-                "american_indian_and_alaska_native",
-                "native_hawaiian_and_pacific_islander",
-                "other_alone",
-                "two_or_more_races",
-            ],
-            axis=1,
-        )
+        newcols = [newcol, f"{newcol}_moe"]
+        cols_to_sum = [
+            "american_indian_and_alaska_native",
+            "native_hawaiian_and_pacific_islander",
+            "other_alone",
+            "two_or_more_races",
+        ]
+        df[newcols] = df.apply(approximate_sum, cols=cols_to_sum, axis=1)
 
         return df
 

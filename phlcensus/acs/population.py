@@ -8,6 +8,7 @@ class Population(ACSDataset):
     Total population.
     """
 
+    AGGREGATION = "count"
     UNIVERSE = "total population"
     TABLE_NAME = "B01003"
     RAW_FIELDS = {"001": "total_population"}

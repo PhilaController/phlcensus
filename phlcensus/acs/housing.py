@@ -1,4 +1,4 @@
-from .core import ACSDataset
+from .core import ACSDataset, DEFAULT_YEAR
 import collections
 import numpy as np
 
@@ -16,6 +16,7 @@ class HousingValue(ACSDataset):
     Housing value.
     """
 
+    AGGREGATION = "count"
     UNIVERSE = "owner-occupied housing units"
     TABLE_NAME = "B25075"
     RAW_FIELDS = collections.OrderedDict(
@@ -51,8 +52,15 @@ class HousingValue(ACSDataset):
     )
 
     @classmethod
-    def get_aggregation_bins(cls):
+    def _get_aggregation_bins(cls):
         """
+        Return the aggregation bins for calculating the median
+        housing value from the distribution. 
+
+        Returns
+        -------
+        bins : list of tuples
+            tuples of (start, stop, column name)
         """
 
         bins = []
@@ -74,9 +82,47 @@ class MedianHousingValue(ACSDataset):
     Median housing value.
     """
 
+    AGGREGATION = "median"
     UNIVERSE = "owner-occupied housing units"
     TABLE_NAME = "B25077"
     RAW_FIELDS = {"001": "median"}
+
+    @classmethod
+    def process(cls, df):
+
+        # Set values < 0 to null
+        cols = list(cls.RAW_FIELDS.values())
+        for col in cols:
+            invalid = df[col] < 0
+            df.loc[invalid, [col, f"{col}_moe"]] = np.nan
+
+        return df
+
+    @staticmethod
+    def median_aggregator(year=DEFAULT_YEAR, N=5):
+        """
+        Function that helps calculate the median value from 
+        the underlying distribution of raw counts.
+
+        Yields
+        ------
+        data : 
+            the raw count data in bins
+        bins : list
+            the matching distribution bins, as returned by the 
+            `get_aggregation_bins()` function
+        out_col : 
+            string specifying name of the calculated column
+        """
+        # the underlying data
+        data = HousingValue.get(level="tract", year=year, N=N)
+
+        # the aggregation bins
+        bins = HousingValue._get_aggregation_bins()
+
+        cols = [b[-1] for b in bins]
+        cols += [f"{col}_moe" for col in cols]
+        yield data[["geometry", "geo_id", "geo_name"] + cols], bins, "median"
 
 
 class GrossRent(ACSDataset):
@@ -84,6 +130,7 @@ class GrossRent(ACSDataset):
     Gross rent (paying cash).
     """
 
+    AGGREGATION = "count"
     UNIVERSE = "renter-occupied housing units paying cash rent"
     TABLE_NAME = "B25063"
     RAW_FIELDS = collections.OrderedDict(
@@ -117,8 +164,15 @@ class GrossRent(ACSDataset):
     )
 
     @classmethod
-    def get_aggregation_bins(cls):
+    def _get_aggregation_bins(cls):
         """
+        Return the aggregation bins for calculating the median
+        gross rent from the distribution. 
+
+        Returns
+        -------
+        bins : list of tuples
+            tuples of (start, stop, column name)
         """
 
         bins = []
@@ -140,9 +194,47 @@ class MedianGrossRent(ACSDataset):
     Median gross rent (dollars).
     """
 
+    AGGREGATION = "median"
     UNIVERSE = "renter-occupied housing units paying cash rent"
     TABLE_NAME = "B25064"
     RAW_FIELDS = {"001": "median"}
+
+    @classmethod
+    def process(cls, df):
+
+        # Set values < 0 to null
+        cols = list(cls.RAW_FIELDS.values())
+        for col in cols:
+            invalid = df[col] < 0
+            df.loc[invalid, [col, f"{col}_moe"]] = np.nan
+
+        return df
+
+    @staticmethod
+    def median_aggregator(year=DEFAULT_YEAR, N=5):
+        """
+        Function that helps calculate the median value from 
+        the underlying distribution of raw counts.
+
+        Yields
+        ------
+        data : 
+            the raw count data in bins
+        bins : list
+            the matching distribution bins, as returned by the 
+            `get_aggregation_bins()` function
+        out_col : 
+            string specifying name of the calculated column
+        """
+        # the underlying data
+        data = GrossRent.get(level="tract", year=year, N=N)
+
+        # the aggregation bins
+        bins = GrossRent._get_aggregation_bins()
+
+        cols = [b[-1] for b in bins]
+        cols += [f"{col}_moe" for col in cols]
+        yield data[["geometry", "geo_id", "geo_name"] + cols], bins, "median"
 
 
 class Tenure(ACSDataset):
@@ -150,6 +242,7 @@ class Tenure(ACSDataset):
     Occupied housing units. Owner or renter.
     """
 
+    AGGREGATION = "count"
     UNIVERSE = "occupied housing units"
     TABLE_NAME = "B25003"
     RAW_FIELDS = collections.OrderedDict(

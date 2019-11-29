@@ -9,6 +9,7 @@ class Mobility(ACSDataset):
     Geographical mobility in the past year by sex for current residence in the US.
     """
 
+    AGGREGATION = "count"
     UNIVERSE = "population 1 year and over"
     TABLE_NAME = "B07003"
     RAW_FIELDS = collections.OrderedDict(

@@ -1,5 +1,4 @@
-from .core import ACSDataset
-from .. import agg
+from .core import ACSDataset, approximate_sum
 import collections
 
 __all__ = ["WorkerClass"]
@@ -10,6 +9,7 @@ class WorkerClass(ACSDataset):
     Sex by Class of Worker for the Civilian Employed Population 16 Years and Over.
     """
 
+    AGGREGATION = "count"
     UNIVERSE = "civilian employed population 16 years and over"
     TABLE_NAME = "B24080"
     RAW_FIELDS = collections.OrderedDict(
@@ -55,10 +55,13 @@ class WorkerClass(ACSDataset):
 
         # Sum over male and female to add "total"
         for g in groups:
-            cols = [f"{tag}_{g}" for tag in ["male", "female"]]
-            df[[f"total_{g}", f"total_{g}_moe"]] = df.apply(
-                agg.approximate_sum, cols=cols, axis=1
-            )
+
+            # columns to sum
+            cols_to_sum = [f"{tag}_{g}" for tag in ["male", "female"]]
+
+            # do the aggregation
+            newcols = [f"total_{g}", f"total_{g}_moe"]
+            df[newcols] = df.apply(approximate_sum, cols=cols_to_sum, axis=1)
 
         return df
 

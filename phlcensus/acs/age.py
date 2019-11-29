@@ -1,5 +1,4 @@
-from .core import ACSDataset
-from .. import agg
+from .core import ACSDataset, approximate_sum
 import collections
 import numpy as np
 
@@ -38,9 +37,11 @@ class Age(ACSDataset):
         "85_and_over",
     ]
 
+    AGGREGATION = "count"
     UNIVERSE = "total population"
     TABLE_NAME = "B01001"
     RAW_FIELDS = collections.OrderedDict({"001": "universe"})
+
     cnt = 2
     for prefix in ["male", "female"]:
         for g in GROUPS:
@@ -54,10 +55,13 @@ class Age(ACSDataset):
         """
         # Calculate totals for both genders together
         for g in cls.GROUPS[1:]:
-            cols = [f"{tag}_{g}" for tag in ["male", "female"]]
-            df[[f"total_{g}", f"total_{g}_moe"]] = df.apply(
-                agg.approximate_sum, cols=cols, axis=1
-            )
+
+            # the columns to sum
+            cols_to_sum = [f"{tag}_{g}" for tag in ["male", "female"]]
+
+            # approximate the sum
+            new_cols = [f"total_{g}", f"total_{g}_moe"]
+            df[new_cols] = df.apply(approximate_sum, cols=cols_to_sum, axis=1)
 
         # Calculate custom group sets
         groupsets = collections.OrderedDict(
@@ -84,19 +88,6 @@ class Age(ACSDataset):
                     "80_to_84",
                     "85_and_over",
                 ],
-            }
-        )
-
-        for groupset, group_list in groupsets.items():
-            for tag in ["total", "male", "female"]:
-                cols = [f"{tag}_{f}" for f in group_list]
-                df[[f"{tag}_{groupset}", f"{tag}_{groupset}_moe"]] = df.apply(
-                    agg.approximate_sum, cols=cols, axis=1
-                )
-
-        # Calculate custom group sets by generation type
-        generations = collections.OrderedDict(
-            {
                 "silent": ["75_to_79", "80_to_84", "85_and_over"],
                 "boomers": [
                     "55_to_59",
@@ -119,22 +110,35 @@ class Age(ACSDataset):
                 ],
             }
         )
-        for groupset, group_list in generations.items():
+
+        # Sum over the custom groups
+        for groupset, group_list in groupsets.items():
             for tag in ["total", "male", "female"]:
-                cols = [f"{tag}_{f}" for f in group_list]
-                df[[f"{tag}_{groupset}", f"{tag}_{groupset}_moe"]] = df.apply(
-                    agg.approximate_sum, cols=cols, axis=1
-                )
+
+                # cols to sum over
+                cols_to_sum = [f"{tag}_{f}" for f in group_list]
+
+                # do the aggregation
+                newcols = [f"{tag}_{groupset}", f"{tag}_{groupset}_moe"]
+                df[newcols] = df.apply(approximate_sum, cols=cols_to_sum, axis=1)
 
         return df
 
     @classmethod
-    def get_aggregation_bins(cls, prefix="total"):
+    def _get_aggregation_bins(cls, prefix="total"):
         """
         Return the aggregation bins for calculating the median age
         from the distribution. 
 
-        Returns a list of the form (start, stop, column_name):
+        Parameters
+        ----------
+        prefix : "total", "male", "female"
+            return the column names with this prefix
+
+        Returns
+        -------
+        bins : list of tuples
+            tuples of (start, stop, column name)
         """
         if prefix not in ["total", "male", "female"]:
             raise ValueError("allowed prefix values are 'total', 'male', and 'female'")

@@ -1,4 +1,4 @@
-from .core import ACSDataset
+from .core import ACSDataset, approximate_sum
 import collections
 import numpy as np
 
@@ -33,6 +33,8 @@ class Earnings(ACSDataset):
         "75000_to_99999",
         "100000_or_more",
     ]
+
+    AGGREGATION = "count"
     UNIVERSE = "population 16 years and over with earnings"
     TABLE_NAME = "B20001"
     RAW_FIELDS = collections.OrderedDict({"001": "universe"})
@@ -44,12 +46,37 @@ class Earnings(ACSDataset):
             cnt += 1
 
     @classmethod
-    def get_aggregation_bins(cls, prefix="total"):
+    def process(cls, df):
         """
-        Return the aggregation bins for calculating the median
-        earnings from the distribution. 
+        Create columns for both genders combined
+        """
+        # Calculate totals for both genders together
+        for g in cls.GROUPS[1:]:
 
-        Returns a list of the form (start, stop, column_name):
+            # the columns to sum
+            cols_to_sum = [f"{tag}_{g}" for tag in ["male", "female"]]
+
+            # approximate the sum
+            new_cols = [f"total_{g}", f"total_{g}_moe"]
+            df[new_cols] = df.apply(approximate_sum, cols=cols_to_sum, axis=1)
+
+        return df
+
+    @classmethod
+    def _get_aggregation_bins(cls, prefix="total"):
+        """
+        Return the aggregation bins for calculating the median earnings
+        from the distribution. 
+
+        Parameters
+        ----------
+        prefix : "total", "male", "female"
+            return the column names with this prefix
+
+        Returns
+        -------
+        bins : list of tuples
+            tuples of (start, stop, column name)
         """
         if prefix not in ["total", "male", "female"]:
             raise ValueError("allowed prefix values are 'total', 'male', and 'female'")

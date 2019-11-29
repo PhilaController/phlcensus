@@ -1,5 +1,4 @@
-from .core import ACSDataset
-from .. import agg
+from .core import ACSDataset, approximate_sum
 import collections
 
 __all__ = ["EducationalAttainment"]
@@ -10,6 +9,7 @@ class EducationalAttainment(ACSDataset):
     Sex by educational attainment for the population 25 years and over.
     """
 
+    AGGREGATION = "count"
     UNIVERSE = "population 25 years and over"
     TABLE_NAME = "B15002"
     RAW_FIELDS = collections.OrderedDict(
@@ -74,11 +74,16 @@ class EducationalAttainment(ACSDataset):
             "professional_school_degree",
             "doctorate_degree",
         ]
+
+        # Sum over gender
         for g in groups:
-            cols = [f"{tag}_{g}" for tag in ["male", "female"]]
-            df[[f"total_{g}", f"total_{g}_moe"]] = df.apply(
-                agg.approximate_sum, cols=cols, axis=1
-            )
+
+            # sum over these columns
+            cols_to_sum = [f"{tag}_{g}" for tag in ["male", "female"]]
+
+            # do the aggregation
+            newcols = [f"total_{g}", f"total_{g}_moe"]
+            df[newcols] = df.apply(approximate_sum, cols=cols_to_sum, axis=1)
 
         # Calculate our custom groups
         groupsets = collections.OrderedDict(
@@ -109,10 +114,12 @@ class EducationalAttainment(ACSDataset):
         )
         for groupset, group_list in groupsets.items():
             for tag in ["total", "male", "female"]:
-                cols = [f"{tag}_{f}" for f in group_list]
-                df[[f"{tag}_{groupset}", f"{tag}_{groupset}_moe"]] = df.apply(
-                    agg.approximate_sum, cols=cols, axis=1
-                )
 
-        # Pass it back
+                # columns to sum
+                cols_to_sum = [f"{tag}_{f}" for f in group_list]
+
+                # new columns
+                newcols = [f"{tag}_{groupset}", f"{tag}_{groupset}_moe"]
+                df[newcols] = df.apply(approximate_sum, cols=cols_to_sum, axis=1)
+
         return df

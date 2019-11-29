@@ -1,5 +1,4 @@
-from .core import ACSDataset
-from .. import agg
+from .core import ACSDataset, approximate_sum
 import collections
 
 __all__ = ["HouseholdLanguage"]
@@ -10,6 +9,7 @@ class HouseholdLanguage(ACSDataset):
     Household language by household limited English speaking status.
     """
 
+    AGGREGATION = "count"
     UNIVERSE = "households"
     TABLE_NAME = "C16002"
     YEARS = [2017, 2016]
@@ -45,19 +45,15 @@ class HouseholdLanguage(ACSDataset):
 
         # not limited English
         newcol = "total_not_limited_english"
-        df[[newcol, f"{newcol}_moe"]] = df.apply(
-            agg.approximate_sum,
-            cols=["only_english"] + [f"{l}_not_limited_english" for l in languages],
-            axis=1,
-        )
+        newcols = [newcol, f"{newcol}_moe"]
+        cols_to_sum = ["only_english"] + [f"{l}_not_limited_english" for l in languages]
+        df[newcols] = df.apply(approximate_sum, cols=cols_to_sum, axis=1)
 
         # limited English
         newcol = "total_limited_english"
-        df[[newcol, f"{newcol}_moe"]] = df.apply(
-            agg.approximate_sum,
-            cols=[f"{l}_limited_english" for l in languages],
-            axis=1,
-        )
+        newcols = [newcol, f"{newcol}_moe"]
+        cols_to_sum = [f"{l}_limited_english" for l in languages]
+        df[newcols] = df.apply(approximate_sum, cols=cols_to_sum, axis=1)
 
         return df
 

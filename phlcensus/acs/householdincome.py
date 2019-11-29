@@ -10,6 +10,7 @@ class HouseholdIncome(ACSDataset):
     Household income in the past 12 months (in inflation-adjusted dollars).
     """
 
+    AGGREGATION = "count"
     UNIVERSE = "households"
     TABLE_NAME = "B19001"
     RAW_FIELDS = collections.OrderedDict(
@@ -35,8 +36,15 @@ class HouseholdIncome(ACSDataset):
     )
 
     @classmethod
-    def get_aggregation_bins(cls):
+    def _get_aggregation_bins(cls):
         """
+        Return the aggregation bins for calculating the median
+        household income from the distribution. 
+
+        Returns
+        -------
+        bins : list of tuples
+            tuples of (start, stop, column name)
         """
 
         bins = []

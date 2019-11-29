@@ -1,5 +1,4 @@
-from .core import ACSDataset
-from .. import agg
+from .core import ACSDataset, approximate_sum, approximate_ratio
 import collections
 
 __all__ = ["RentBurden"]
@@ -10,6 +9,7 @@ class RentBurden(ACSDataset):
     Gross rent as a percentage of household income in the past 12 months.
     """
 
+    AGGREGATION = "count"
     UNIVERSE = "renter-occupied housing units"
     TABLE_NAME = "B25070"
     RAW_FIELDS = collections.OrderedDict(
@@ -32,15 +32,15 @@ class RentBurden(ACSDataset):
 
         # More than 35% is defined as rent burdened
         newcol = "more_than_35"
-        df[[newcol, f"{newcol}_moe"]] = df.apply(
-            agg.approximate_sum, cols=["35_to_40", "40_to_50", "more_than_50"], axis=1
-        )
+        newcols = [newcol, f"{newcol}_moe"]
+        cols_to_sum = ["35_to_40", "40_to_50", "more_than_50"]
+        df[newcols] = df.apply(approximate_sum, cols=cols_to_sum, axis=1)
 
         # As a percent
         newcol = "percent_more_than_35"
-        df[[newcol, f"{newcol}_moe"]] = df.apply(
-            agg.approximate_ratio, cols=["more_than_35", "universe"], axis=1
-        )
+        newcols = [newcol, f"{newcol}_moe"]
+        cols_to_ratio = ["more_than_35", "universe"]
+        df[newcols] = df.apply(approximate_ratio, cols=cols_to_ratio, axis=1)
 
         return df
 

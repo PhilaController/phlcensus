@@ -1,5 +1,6 @@
 from ..core import Dataset, EPSG, data_dir
 from ..regions import CensusTracts
+from .. import DEFAULT_YEAR
 import pandas as pd
 
 __all__ = ["WorkLODES", "HomeLODES"]
@@ -23,11 +24,11 @@ class BaseLODES(Dataset):
     URL = "https://lehd.ces.census.gov/data/lodes/LODES7/pa"
 
     @classmethod
-    def get_path(cls, year=2017):
+    def get_path(cls, year=DEFAULT_YEAR):
         return data_dir / cls.__name__ / str(year)
 
     @classmethod
-    def download(cls, key, year=2017):
+    def download(cls, key, year=DEFAULT_YEAR):
 
         # Get the year
         if year not in cls.YEARS:
@@ -53,7 +54,9 @@ class BaseLODES(Dataset):
         data["is_resident"] = False
 
         # load the tracts
-        tracts = CensusTracts.get().assign(geo_id=lambda df: df.geo_id.astype(str))
+        tracts = CensusTracts.get(year=year).assign(
+            geo_id=lambda df: df.geo_id.astype(str)
+        )
 
         # determine residents
         residents = data["h_geocode"].str.slice(0, 11).isin(tracts["geo_id"])

@@ -1,5 +1,6 @@
 from ..core import Dataset, EPSG, data_dir
 from ..regions import CensusTracts
+from .. import crosswalk, analysis, DEFAULT_YEAR
 import pandas as pd
 import collections
 
@@ -47,7 +48,7 @@ class LongformLODES(Dataset):
             "CNS14": "waste_management",
             "CNS15": "educational_services",
             "CNS16": "healthcare_social_services",
-            "CNS17": "ars_entertainment_recreation",
+            "CNS17": "arts_entertainment_recreation",
             "CNS18": "accommodation_food_services",
             "CNS19": "other_services",
             "CNS20": "public_administration",
@@ -79,11 +80,11 @@ class LongformLODES(Dataset):
     )
 
     @classmethod
-    def get_path(cls, year=2017, job_type="all"):
+    def get_path(cls, year=DEFAULT_YEAR, job_type="all"):
         return data_dir / cls.__name__ / str(year) / job_type
 
     @classmethod
-    def download(cls, key, year=2017, job_type="all"):
+    def download(cls, key, year=DEFAULT_YEAR, job_type="all"):
 
         # Validate the input year
         if year not in cls.YEARS:
@@ -113,7 +114,9 @@ class LongformLODES(Dataset):
         )
 
         # load the tracts
-        tracts = CensusTracts.get().assign(geo_id=lambda df: df.geo_id.astype(str))
+        tracts = CensusTracts.get(year=year).assign(
+            geo_id=lambda df: df.geo_id.astype(str)
+        )
 
         # sum by block group
         cols = [col for col in data.columns if col in cls.RAW_FIELDS]
@@ -127,6 +130,57 @@ class LongformLODES(Dataset):
 
         return out.sort_values("geo_id").reset_index(drop=True)
 
+    @classmethod
+    def get(cls, fresh=False, year=DEFAULT_YEAR, level="tract"):
+        """
+        Load the dataset, optionally downloading a fresh copy.
+
+        Parameters
+        ---------
+        fresh : bool, optional
+            a boolean keyword that specifies whether a fresh copy of the 
+            dataset should be downloaded
+        year : int
+            the dataset's year; available dating back to 2002
+        level : str, optional
+            the geographic level, one of 'tract', 'nta', or 'puma'
+        """
+        allowed = ["tract", "nta", "puma"]
+        if level not in allowed:
+            raise ValueError(f"Allowed values for 'level': {allowed}")
+
+        # get the census tract level data
+        data = super().get(fresh=fresh, year=year)
+
+        # Get the cross walk from tracts to the desired level
+        if level == "nta":
+            xwalk = crosswalk.tracts_to_ntas(year=year)
+        elif level == "puma":
+            xwalk = crosswalk.tracts_to_pumas(year=year)
+
+        # Aggregate if we need to
+        if level != "tract":
+
+            # Merge with crosswalk
+            merged = xwalk.merge(
+                data.drop(labels=["geometry"], axis=1),
+                left_on="geo_id_tract",
+                right_on="geo_id",
+                how="left",
+            )
+
+            # Aggregate count data
+            data = analysis.aggregate_count_data(
+                merged, f"geo_id_{level}", id_vars=[f"geo_name_{level}"]
+            )
+
+            # Rename the columns
+            data = data.rename(
+                columns={f"geo_id_{level}": "geo_id", f"geo_name_{level}": "geo_name"}
+            )
+
+        return data
+
 
 class WorkLongformLODES(LongformLODES):
     """
@@ -135,6 +189,14 @@ class WorkLongformLODES(LongformLODES):
 
     This provides a high-level summary of the jobs by
     where the jobs are located.
+
+    Parameters
+    ----------
+    year : int
+        the dataset's year; available dating back to 2002
+    job_type : str, optional 
+        the type of jobs to return; one of: "all", "primary", "private", 
+        or "private_primary"
 
     Source
     ------
@@ -155,6 +217,14 @@ class HomeLongformLODES(LongformLODES):
     This provides a high-level summary of the jobs by
     where the workers live.
 
+    Parameters
+    ----------
+    year : int
+        the dataset's year; available dating back to 2002
+    job_type : str, optional 
+        the type of jobs to return; one of: "all", "primary", "private", 
+        or "private_primary"
+
     Source
     ------
     Longitudinal Employer-Household Dynamics (LEHD) 
@@ -164,3 +234,4 @@ class HomeLongformLODES(LongformLODES):
     @classmethod
     def download(cls, **kwargs):
         return super().download("rac", **kwargs)
+

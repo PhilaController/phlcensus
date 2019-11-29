@@ -5,13 +5,14 @@ from pathlib import Path
 data_dir = Path(__file__).parent / "data"
 
 EPSG = 2272
+DEFAULT_YEAR = 2017
 
 from .core import DATASETS
 from . import acs
-from . import econ
+from . import economic
 from . import external
 from .regions import *
-from .analysis import *
+
 
 __all__ = sorted(DATASETS)
 

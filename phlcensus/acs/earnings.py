@@ -83,17 +83,13 @@ class Earnings(ACSDataset):
 
         bins = []
         for i, g in enumerate(cls.GROUPS[1:]):
-            if i == 0:
-                start, end = 0, 4
-            elif g.endswith("or_more"):
+            if g.endswith("or_more"):
                 start = float(g.split("_")[0])
                 end = np.inf
             else:
                 fields = g.split("_to_")
-                if len(fields) == 2:
-                    start, end = map(float, fields)
-                else:
-                    start = end = float(fields[0])
+                assert len(fields) == 2
+                start, end = map(float, fields)
 
             bins.append((start, end, f"{prefix}_{g}"))
 

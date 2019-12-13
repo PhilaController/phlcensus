@@ -210,6 +210,7 @@ class SummaryLODES(Dataset):
                 ),
                 left_on="geo_id",
                 right_on="geo_id",
+                how="left",
             )
 
         # Add work in home tract
@@ -221,6 +222,7 @@ class SummaryLODES(Dataset):
             .rename(columns={"S000": f"total_work_at_home"}),
             left_on="geo_id",
             right_on="geo_id",
+            how="left",
         )
 
         # Add work in Center City
@@ -233,6 +235,7 @@ class SummaryLODES(Dataset):
                 .rename(columns={"S000": f"total_work_in_center_city"}),
                 left_on="geo_id",
                 right_on="geo_id",
+                how="left",
             )
 
         if kind == "w_geocode":
@@ -254,6 +257,7 @@ class SummaryLODES(Dataset):
                 cols = [f"{tag}_{g}" for tag in ["resident", "nonresident"]]
                 out[f"total_{g}"] = out[cols].sum(axis=1)
 
+        # Sort by geo id and reset
         out = out.sort_values("geo_id").reset_index(drop=True)
 
         # if we aggregated, add the right geometries
@@ -264,10 +268,14 @@ class SummaryLODES(Dataset):
                 regions = PUMAs.get()
 
             out = regions[["geometry", "geo_id"]].merge(
-                out.drop(labels=["geometry"], axis=1), on="geo_id"
+                out.drop(labels=["geometry"], axis=1), on="geo_id", how="left"
             )
 
-        return out
+        # fill missing
+        cols = [col for col in out.columns if not col.startswith("geo")]
+        out[cols] = out[cols].fillna(0)
+
+        return out.drop(labels=[kind], axis=1)
 
     @classmethod
     def get(

@@ -32,6 +32,10 @@ def aggregate_tracts(data, level, kind, bins=None):
     # Aggregate if we need to
     if level != "tract":
 
+        # convert to strings
+        xwalk["geo_id_tract"] = xwalk["geo_id_tract"].astype(str)
+        data["geo_id"] = data["geo_id"].astype(str)
+
         # Merge with crosswalk
         merged = xwalk.merge(
             data.drop(labels=["geometry"], axis=1),

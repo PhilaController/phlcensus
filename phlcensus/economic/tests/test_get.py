@@ -9,7 +9,11 @@ def test_lodes_work(cls):
     data_by_tract = cls.get(level="tract", kind="work")
 
     # columns to compare
-    cols = [col for col in data_by_tract if not col.startswith("geo")]
+    cols = [
+        col
+        for col in data_by_tract
+        if not col.startswith("geo") and col != "total_work_at_home"
+    ]
 
     # Test other levels
     for level in ["nta", "puma"]:
@@ -24,7 +28,11 @@ def test_lodes_home(cls):
     data_by_tract = cls.get(level="tract", kind="home")
 
     # columns to compare
-    cols = [col for col in data_by_tract if not col.startswith("geo")]
+    cols = [
+        col
+        for col in data_by_tract
+        if not col.startswith("geo") and col != "total_work_at_home"
+    ]
 
     # Test other levels
     for level in ["nta", "puma"]:

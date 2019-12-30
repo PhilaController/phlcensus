@@ -3,7 +3,7 @@ import pandas as pd
 from . import EPSG, data_dir
 from .core import Dataset
 
-__all__ = ["PlanningDistricts", "CensusTracts", "PUMAs", "ZIPCodes", "NTAs"]
+__all__ = ["CensusTracts", "PUMAs", "ZIPCodes", "NTAs"]
 
 # Default year for data
 DEFAULT_YEAR = 2018
@@ -27,22 +27,6 @@ class ZIPCodes(Dataset):
 
         url = "https://services.arcgis.com/fLeGjb7u4uXqeF9q/arcgis/rest/services/Philadelphia_ZCTA_2018/FeatureServer/0"
         return esri2gpd.get(url, fields=["zip_code"]).to_crs(epsg=EPSG)
-
-
-class PlanningDistricts(Dataset):
-    """
-    Planning districts in the city of Philadelphia.
-
-    Source
-    ------
-    https://www.opendataphilly.org/dataset/planning-districts
-    """
-
-    @classmethod
-    def download(cls, **kwargs):
-
-        url = "https://services.arcgis.com/fLeGjb7u4uXqeF9q/arcgis/rest/services/Planning_Districts/FeatureServer/0"
-        return esri2gpd.get(url).to_crs(epsg=EPSG)
 
 
 class CensusTracts(Dataset):

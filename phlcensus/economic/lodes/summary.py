@@ -2,7 +2,7 @@ from ...core import Dataset, EPSG, data_dir
 from ...regions import CensusTracts, NTAs, PUMAs
 from ...aggregate import aggregate_tracts
 from ... import crosswalk
-from ... import DEFAULT_YEAR
+from . import DEFAULT_YEAR
 import pandas as pd
 
 __all__ = ["SummaryLODES"]
@@ -23,7 +23,7 @@ class SummaryLODES(Dataset):
     https://lehd.ces.census.gov/data/lodes/LODES7/LODESTechDoc7.3.pdf
     """
 
-    YEARS = list(range(2002, 2018))
+    YEARS = list(range(2002, DEFAULT_YEAR + 1))
     URL = "https://lehd.ces.census.gov/data/lodes/LODES7/pa"
 
     @classmethod

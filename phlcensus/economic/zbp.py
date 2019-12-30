@@ -6,13 +6,15 @@ import collections
 
 __all__ = ["ZBP"]
 
+DEFAULT_YEAR = 2017
+
 
 class ZBP(Dataset):
     """
     Data from the ZIP Code Business Patterns (ZBP) survey.
     """
 
-    YEARS = [2016, 2015, 2014, 2013, 2012]
+    YEARS = list(range(2012, DEFAULT_YEAR + 1))
 
     @classmethod
     def process(cls, df):
@@ -65,15 +67,15 @@ class ZBP(Dataset):
         return out.reset_index(drop=True)
 
     @classmethod
-    def get_path(cls, year=2016):
+    def get_path(cls, year=DEFAULT_YEAR):
         return data_dir / cls.__name__ / str(year)
 
     @classmethod
-    def download(cls, year=2016):
+    def download(cls, year=DEFAULT_YEAR):
         return cls._query_census_api(year=year)
 
     @classmethod
-    def get(cls, fresh=False, year=2016):
+    def get(cls, fresh=False, year=DEFAULT_YEAR):
         """
         Load the dataset, optionally downloading a fresh copy.
 

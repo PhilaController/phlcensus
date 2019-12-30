@@ -13,5 +13,5 @@ class SNAP(ACSDataset):
     TABLE_NAME = "B22003"
     AGGREGATION = "count"
     RAW_FIELDS = collections.OrderedDict(
-        {"001": "universe", "002": "recipient", "05": "nonrecipient"}
+        {"001": "universe", "002": "recipient", "005": "nonrecipient"}
     )

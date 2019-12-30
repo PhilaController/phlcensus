@@ -1,4 +1,4 @@
-from .core import ACSDataset, approximate_sum
+from .core import ACSDataset, DEFAULT_YEAR, approximate_sum
 import collections
 
 __all__ = ["HouseholdLanguage"]
@@ -12,7 +12,7 @@ class HouseholdLanguage(ACSDataset):
     AGGREGATION = "count"
     UNIVERSE = "households"
     TABLE_NAME = "C16002"
-    YEARS = [2017, 2016]
+    YEARS = list(range(2016, DEFAULT_YEAR + 1))
     RAW_FIELDS = collections.OrderedDict(
         {
             "001": "universe",

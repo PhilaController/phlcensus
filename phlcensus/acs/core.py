@@ -34,7 +34,8 @@ class ACSDataset(Dataset):
         """
         if cls not in DATASETS:
             DATASETS[cls.__name__] = cls
-        super().__init_subclass__(**kwargs)
+        if cls.__name__ != "ACSDataset":
+            super().__init_subclass__(**kwargs)
 
     @classmethod
     def process(cls, df):

@@ -2,10 +2,13 @@ import esri2gpd
 import cenpy as cen
 import geopandas as gpd
 import pandas as pd
-from . import EPSG, data_dir, DEFAULT_YEAR
+from . import EPSG, data_dir
 from .core import Dataset
 
 __all__ = ["PlanningDistricts", "CensusTracts", "PUMAs", "ZIPCodes", "NTAs"]
+
+# Default year for data
+DEFAULT_YEAR = 2018
 
 
 class ZIPCodes(Dataset):
@@ -60,7 +63,7 @@ class CensusTracts(Dataset):
         Download the census tract boundaries
         """
         # Get the year
-        YEAR = kwargs.get("year", 2017)
+        YEAR = kwargs.get("year", DEFAULT_YEAR)
 
         # trim to PA (42) and Philadelphia County (101)
         WHERE = "STATE=42 AND COUNTY=101"
@@ -99,7 +102,7 @@ class PUMAs(Dataset):
     def download(cls, **kwargs):
 
         # Get the year
-        YEAR = kwargs.get("year", 2017)
+        YEAR = kwargs.get("year", DEFAULT_YEAR)
 
         if YEAR >= 2010:
             URL = "https://tigerweb.geo.census.gov/arcgis/rest/services/Census2010/tigerWMS_Census2010/MapServer/0"

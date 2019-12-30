@@ -1,6 +1,4 @@
 import esri2gpd
-import cenpy as cen
-import geopandas as gpd
 import pandas as pd
 from . import EPSG, data_dir
 from .core import Dataset

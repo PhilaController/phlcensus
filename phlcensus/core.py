@@ -53,7 +53,7 @@ class Dataset(ABC):
         """
         Dictionary of meta-data related to the dataset.
         """
-        path = data_dir / cls.__name__ / "meta.json"
+        path = cls.get_path() / "meta.json"
         if path.exists():
             return json.load(path.open(mode="r"))
         else:

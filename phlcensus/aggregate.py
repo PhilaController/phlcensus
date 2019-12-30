@@ -183,11 +183,11 @@ def aggregate_count_data(df, groupby, id_vars=[]):
         )
 
     # data columns
-    data_columns = [col for col in df.columns if not col.startswith("geo")]
-
-    # fill na with 0
-    df = df.copy()
-    df[data_columns] = df[data_columns].fillna(0)
+    data_columns = [
+        col
+        for col in df.columns
+        if not col.startswith("geo") and not col.endswith("moe")
+    ]
 
     def _aggregate(group_df):
         """
@@ -195,21 +195,28 @@ def aggregate_count_data(df, groupby, id_vars=[]):
         """
         out = {}
         for col in data_columns:
-
             # The name of the error column (if it exists)
             error_col = f"{col}_moe"
 
-            # column values, margin of error (if it exists)
-            args = np.column_stack(
-                [group_df[col], group_df.get(error_col, np.zeros(len(group_df)))]
-            )
+            # remove any NaN rows
+            subset = group_df.dropna(subset=[col], how="any")
 
-            # do the aggregation
-            aggval, moe = cda.approximate_sum(*args)
+            # aggregat if we had any rows left
+            if len(subset):
+
+                # column values, margin of error (if it exists)
+                args = np.column_stack(
+                    [subset[col], subset.get(error_col, np.zeros(len(subset)))]
+                )
+
+                # do the aggregation
+                aggval, moe = cda.approximate_sum(*args)
+            else:
+                aggval = moe = np.nan
 
             # store
             out[col] = aggval
-            if error_col in group_df.columns:
+            if error_col in subset.columns:
                 out[f"{col}_moe"] = moe
 
         out["geometry"] = group_df.geometry.unary_union

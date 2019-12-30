@@ -153,7 +153,7 @@ class ACSDataset(Dataset):
                             how="outer",
                         )
 
-                return result.loc[:, data.columns]
+                toret = result.loc[:, data.columns]
 
         else:
 
@@ -184,7 +184,22 @@ class ACSDataset(Dataset):
                 df["geo_id"] = df["geo_id"].astype(str)
 
             # Return the processed data
-            return df.rename(columns=variables)
+            toret = df.rename(columns=variables)
+
+        # the columns that represent data
+        data_columns = [
+            col
+            for col in toret.columns
+            if not col.startswith("geo") and not col.endswith("moe")
+        ]
+
+        # Set negative elements to NaN
+        for col in data_columns:
+            null = toret[col] < 0
+            toret.loc[null, col] = np.nan
+            toret.loc[null, f"{col}_moe"] = np.nan
+
+        return toret
 
     @classmethod
     def _query_census_by_puma(cls, api, variables, year):

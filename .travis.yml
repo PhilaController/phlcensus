@@ -22,7 +22,7 @@ install:
     done < requirements.txt
   - pip install .[dev]
 script:
-  - py.test . --cov phlcensus
+  - py.test -x -v . --cov phlcensus
 after_success:
   - coveralls
 deploy:

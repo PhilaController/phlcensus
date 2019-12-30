@@ -1,26 +1,32 @@
 from ..regions import PUMAs, CensusTracts
 from ..core import Dataset, data_dir
 from ..aggregate import aggregate_tracts
-from .. import DEFAULT_YEAR
 import census_data_aggregator as cda
 import cenpy as cen
 import pandas as pd
 import numpy as np
 
+# Registry of ACS datasets
 DATASETS = {}
+
+# The default year for ACS data
+DEFAULT_YEAR = 2018
 
 
 class ACSDataset(Dataset):
     """
     A base class to represent a dataset downloaded from the Census API.
 
+    This class should NOT be called directly; instead, call one of 
+    the subclasses of this class.
+
     Notes
     -----
-    Valid for years from 2012 to 2017.
+    Valid for years from 2012 to 2018.
     """
 
     AGGREGATION = None
-    YEARS = [2017, 2016, 2015, 2014, 2013, 2012]
+    YEARS = list(range(2012, DEFAULT_YEAR + 1))
 
     def __init_subclass__(cls, **kwargs):
         """

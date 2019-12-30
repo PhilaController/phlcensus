@@ -5,7 +5,6 @@ from pathlib import Path
 data_dir = Path(__file__).parent / "data"
 
 EPSG = 2272
-DEFAULT_YEAR = 2017
 
 from .core import DATASETS
 from . import acs

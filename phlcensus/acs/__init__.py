@@ -18,5 +18,6 @@ from .population import *
 from .poverty import *
 from .race import *
 from .rentburden import *
+from .schoolenrollment import *
 from .snap import *
 from .workerclass import *

@@ -158,8 +158,18 @@ class ACSDataset(Dataset):
 
         else:
 
+            # determine the prefix
+            if cls.TABLE_NAME[0] in ["B", "C"]:
+                prefix = "DT"
+            elif cls.TABLE_NAME[0] == "S":
+                prefix = "ST"
+            else:
+                raise ValueError(
+                    "Cannot determine if requested table is 'detailed' or 'subject'"
+                )
+
             # Initialize the API
-            api = cen.remote.APIConnection(f"ACSDT{N}Y{year}")
+            api = cen.remote.APIConnection(f"ACS{prefix}{N}Y{year}")
 
             # Format the variable names properly
             variables = {}

@@ -119,7 +119,7 @@ class ACSDataset(Dataset):
                 return aggregate_tracts(data, "nta", "count")
             else:  # median data
 
-                assert hasattr(cls, "median_aggregator")
+                assert hasattr(cls, "_median_aggregator")
 
                 # Store the result
                 result = None

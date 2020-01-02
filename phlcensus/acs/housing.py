@@ -99,7 +99,7 @@ class MedianHousingValue(ACSDataset):
         return df
 
     @staticmethod
-    def median_aggregator(year=DEFAULT_YEAR, N=5):
+    def _median_aggregator(year=DEFAULT_YEAR, N=5):
         """
         Function that helps calculate the median value from 
         the underlying distribution of raw counts.
@@ -211,7 +211,7 @@ class MedianGrossRent(ACSDataset):
         return df
 
     @staticmethod
-    def median_aggregator(year=DEFAULT_YEAR, N=5):
+    def _median_aggregator(year=DEFAULT_YEAR, N=5):
         """
         Function that helps calculate the median value from 
         the underlying distribution of raw counts.

@@ -85,11 +85,15 @@ class DetailedLODES(Dataset):
     )
 
     @classmethod
-    def get_path(cls, year=DEFAULT_YEAR, kind="work", job_type="all"):
-        return data_dir / cls.__name__ / kind / str(year) / job_type
+    def get_path(cls, year=DEFAULT_YEAR, kind="work", job_type="all", segment="S000"):
+        path = data_dir / cls.__name__ / kind / str(year) / job_type
+        if segment == "S000":
+            return path
+        else:
+            return path / segment
 
     @classmethod
-    def download(cls, year=DEFAULT_YEAR, kind="work", job_type="all"):
+    def download(cls, year=DEFAULT_YEAR, kind="work", job_type="all", segment="S000"):
 
         # Validate the input year
         if year not in cls.YEARS:
@@ -116,7 +120,7 @@ class DetailedLODES(Dataset):
 
         # Load the data
         # See: https://lehd.ces.census.gov/data/lodes/LODES7/LODESTechDoc7.3.pdf
-        filename = f"{cls.URL}/{kind}/pa_{kind}_S000_{job_type}_{year}.csv.gz"
+        filename = f"{cls.URL}/{kind}/pa_{kind}_{segment}_{job_type}_{year}.csv.gz"
         data = (
             pd.read_csv(filename)
             .rename(columns={"h_geocode": "geo_id", "w_geocode": "geo_id"})
@@ -142,7 +146,13 @@ class DetailedLODES(Dataset):
 
     @classmethod
     def get(
-        cls, fresh=False, kind="work", year=DEFAULT_YEAR, level="tract", job_type="all"
+        cls,
+        fresh=False,
+        kind="work",
+        year=DEFAULT_YEAR,
+        level="tract",
+        job_type="all",
+        segment="S000",
     ):
         """
         Load the dataset, optionally downloading a fresh copy.
@@ -168,7 +178,9 @@ class DetailedLODES(Dataset):
             raise ValueError(f"Allowed values for 'level': {allowed}")
 
         # Get the census tract level data
-        data = super().get(fresh=fresh, kind=kind, year=year, job_type=job_type)
+        data = super().get(
+            fresh=fresh, kind=kind, year=year, job_type=job_type, segment=segment
+        )
 
         # Aggregate if we need to
         if level != "tract":
@@ -176,4 +188,3 @@ class DetailedLODES(Dataset):
 
         # Return
         return data
-

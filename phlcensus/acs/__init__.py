@@ -9,6 +9,7 @@ from .foreignborn import *
 from .gini import *
 from .householdincome import *
 from .housing import *
+from .internet import *
 from .language import *
 from .medianage import *
 from .medianearnings import *

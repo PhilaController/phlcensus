@@ -6,7 +6,7 @@ __all__ = ["Internet"]
 
 class Internet(ACSDataset):
     """
-    
+    PRESENCE AND TYPES OF INTERNET SUBSCRIPTIONS IN HOUSEHOLD
     """
 
     AGGREGATION = "count"

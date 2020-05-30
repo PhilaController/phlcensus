@@ -1,4 +1,4 @@
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 
 from pathlib import Path
 
@@ -21,4 +21,3 @@ def available_datasets():
     Return a list of the names of the available datasets.
     """
     return [DATASETS[cls] for cls in sorted(DATASETS)]
-

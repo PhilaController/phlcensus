@@ -1,4 +1,4 @@
-__version__ = "0.0.5"
+__version__ = "0.0.6"
 
 from pathlib import Path
 
@@ -6,12 +6,9 @@ data_dir = Path(__file__).parent / "data"
 
 EPSG = 2272
 
+from . import acs, economic, external
 from .core import DATASETS
-from . import acs
-from . import economic
-from . import external
 from .regions import *
-
 
 __all__ = sorted(DATASETS)
 

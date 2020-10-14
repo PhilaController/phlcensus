@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 PACKAGE_NAME = "phlcensus"
 
@@ -31,4 +31,5 @@ setup(
     python_requires=">=3.6",
     install_requires=get_requirements("requirements.txt"),
     extras_require={"dev": get_requirements("requirements.dev.txt")},
+    add_package_data=True
 )
